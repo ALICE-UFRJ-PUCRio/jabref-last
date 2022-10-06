@@ -1,18 +1,11 @@
 package org.jabref.model.entry.field;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import org.jabref.model.strings.StringUtil;
 import org.jabref.model.util.OptionalUtil;
+
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class FieldFactory {
 
@@ -164,7 +157,8 @@ public class FieldFactory {
      * separate preferences object
      */
     public static List<Field> getDefaultGeneralFields() {
-        List<Field> defaultGeneralFields = new ArrayList<>(Arrays.asList(StandardField.DOI, StandardField.CROSSREF, StandardField.KEYWORDS, StandardField.EPRINT, StandardField.URL, StandardField.FILE, StandardField.GROUPS, StandardField.OWNER, StandardField.TIMESTAMP));
+        //List<Field> defaultGeneralFields = new ArrayList<>(Arrays.asList(StandardField.DOI, StandardField.CROSSREF, StandardField.KEYWORDS, StandardField.EPRINT, StandardField.URL, StandardField.FILE, StandardField.GROUPS, StandardField.OWNER, StandardField.TIMESTAMP));
+        List<Field> defaultGeneralFields = new ArrayList<>(Arrays.asList(StandardField.CROSSREF, StandardField.KEYWORDS, StandardField.FILE, StandardField.GROUPS, StandardField.OWNER, StandardField.TIMESTAMP));
         defaultGeneralFields.addAll(EnumSet.allOf(SpecialField.class));
         return defaultGeneralFields;
     }

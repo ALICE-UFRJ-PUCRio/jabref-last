@@ -1,11 +1,10 @@
 package org.jabref.logic.texparser;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
-import java.io.Reader;
-import java.io.UncheckedIOException;
+import org.jabref.model.texparser.LatexParserResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,11 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jabref.model.texparser.LatexParserResult;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultLatexParser implements LatexParser {
 
@@ -33,8 +27,11 @@ public class DefaultLatexParser implements LatexParser {
      */
     private static final String[] CITE_COMMANDS = {
             "[cC]ite(alt|alp|author|authorfull|date|num|p|t|text|title|url|year|yearpar)?",
-            "([aA]|[aA]uto|fnote|foot|footfull|full|no|[nN]ote|[pP]aren|[pP]note|[tT]ext|[sS]mart|super)cite([s*]?)",
-            "footcitetext", "(block|text)cquote"
+            //"([aA]|[aA]uto|fnote|foot|footfull|full|no|[nN]ote|[pP]aren|[pP]note|[tT]ext|[sS]mart|super)cite([s*]?)",
+            //"footcitetext", "(block|text)cquote"
+            "([aA]|fnote|foot|footfull|full|no|[nN]ote|[pP]aren|[pP]note|[tT]ext|[sS]mart|super)cite",
+            "footcitetext"
+
     };
     private static final String CITE_GROUP = "key";
     private static final Pattern CITE_PATTERN = Pattern.compile(

@@ -1,11 +1,5 @@
 package org.jabref.gui.externalfiles;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import org.jabref.gui.externalfiletype.ExternalFileType;
 import org.jabref.gui.externalfiletype.ExternalFileTypes;
 import org.jabref.gui.externalfiletype.UnknownExternalFileType;
@@ -18,9 +12,13 @@ import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
 import org.jabref.model.entry.LinkedFile;
 import org.jabref.preferences.FilePreferences;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 public class ExternalFilesEntryLinker {
 
@@ -43,7 +41,8 @@ public class ExternalFilesEntryLinker {
         if (firstExistingFileDir.isPresent()) {
             Path targetFile = firstExistingFileDir.get().resolve(file.getFileName());
             if (FileUtil.copyFile(file, targetFile, false)) {
-                return Optional.of(targetFile);
+                //return Optional.of(targetFile);
+                return Optional.ofNullable(targetFile);
             }
         }
         return Optional.empty();
@@ -89,7 +88,8 @@ public class ExternalFilesEntryLinker {
         try (AutoCloseable blocker = indexingTaskManager.blockNewTasks()) {
             for (Path file : files) {
                 copyFileToFileDir(file)
-                        .ifPresent(copiedFile -> addFilesToEntry(entry, Collections.singletonList(copiedFile)));
+                        //.ifPresent(copiedFile -> addFilesToEntry(entry, Collections.singletonList(copiedFile)));
+                        .ifPresent(copiedFile -> addFilesToEntry(entry, files));
             }
             renameLinkedFilesToPattern(entry);
         } catch (Exception e) {
