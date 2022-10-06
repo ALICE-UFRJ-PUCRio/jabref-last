@@ -1,6 +1,21 @@
 package org.jabref.gui;
 
-import java.awt.Toolkit;
+import javafx.application.Platform;
+import javafx.scene.control.TextInputControl;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.MouseButton;
+import org.jabref.architecture.AllowedToUseAwt;
+import org.jabref.logic.bibtex.BibEntryWriter;
+import org.jabref.logic.bibtex.FieldWriter;
+import org.jabref.model.database.BibDatabaseMode;
+import org.jabref.model.entry.BibEntry;
+import org.jabref.preferences.PreferencesService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -8,23 +23,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-
-import javafx.application.Platform;
-import javafx.scene.control.TextInputControl;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DataFormat;
-import javafx.scene.input.MouseButton;
-
-import org.jabref.architecture.AllowedToUseAwt;
-import org.jabref.logic.bibtex.BibEntryWriter;
-import org.jabref.logic.bibtex.FieldWriter;
-import org.jabref.model.database.BibDatabaseMode;
-import org.jabref.model.entry.BibEntry;
-import org.jabref.preferences.PreferencesService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AllowedToUseAwt("Requires ava.awt.datatransfer.Clipboard")
 public class ClipBoardManager {
@@ -63,7 +61,7 @@ public class ClipBoardManager {
                 // using InvalidationListener because of https://bugs.openjdk.java.net/browse/JDK-8176270
                 observable -> Platform.runLater(() -> {
                     String newValue = input.getSelectedText();
-                    if (!newValue.isEmpty() && (primary != null)) {
+                    if (!newValue.isEmpty()) {
                         primary.setContents(new StringSelection(newValue), null);
                     }
                 }));
@@ -92,19 +90,17 @@ public class ClipBoardManager {
     }
 
     /**
-     * Get the String residing on the primary clipboard (if it exists).
+     * Get the String residing on the primary clipboard.
      *
      * @return any text found on the primary Clipboard; if none found, try with the system clipboard.
      */
     public static String getContentsPrimary() {
-        if (primary != null) {
-            Transferable contents = primary.getContents(null);
-            if ((contents != null) && contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-                try {
-                    return (String) contents.getTransferData(DataFlavor.stringFlavor);
-                } catch (UnsupportedFlavorException | IOException e) {
-                    LOGGER.warn(e.getMessage());
-                }
+        Transferable contents = primary.getContents(null);
+        if (contents != null && contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+            try {
+                return (String) contents.getTransferData(DataFlavor.stringFlavor);
+            } catch (UnsupportedFlavorException | IOException e) {
+                LOGGER.warn(e.getMessage());
             }
         }
         return getContents();
@@ -121,14 +117,12 @@ public class ClipBoardManager {
     }
 
     /**
-     * Puts content onto the primary clipboard (if it exists).
+     * Puts content onto the primary clipboard.
      *
      * @param content the ClipboardContent to set as current value of the primary clipboard.
      */
     public void setPrimaryClipboardContent(ClipboardContent content) {
-        if (primary != null) {
-            primary.setContents(new StringSelection(content.getString()), null);
-        }
+        primary.setContents(new StringSelection(content.getString()), null);
     }
 
     public void setHtmlContent(String html, String fallbackPlain) {

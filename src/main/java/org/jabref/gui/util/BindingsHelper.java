@@ -28,7 +28,6 @@ public class BindingsHelper {
     }
 
     public static Subscription includePseudoClassWhen(Node node, PseudoClass pseudoClass, ObservableValue<? extends Boolean> condition) {
-        //condition.addListener((obs, oldValue, newValue) -> node.pseudoClassStateChanged(pseudoClass, newValue));
         Consumer<Boolean> changePseudoClass = value -> node.pseudoClassStateChanged(pseudoClass, value);
         Subscription subscription = EasyBind.subscribe(condition, changePseudoClass);
 

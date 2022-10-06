@@ -41,7 +41,6 @@ public class ExternalFilesEntryLinker {
         if (firstExistingFileDir.isPresent()) {
             Path targetFile = firstExistingFileDir.get().resolve(file.getFileName());
             if (FileUtil.copyFile(file, targetFile, false)) {
-                //return Optional.of(targetFile);
                 return Optional.ofNullable(targetFile);
             }
         }
@@ -88,7 +87,6 @@ public class ExternalFilesEntryLinker {
         try (AutoCloseable blocker = indexingTaskManager.blockNewTasks()) {
             for (Path file : files) {
                 copyFileToFileDir(file)
-                        //.ifPresent(copiedFile -> addFilesToEntry(entry, Collections.singletonList(copiedFile)));
                         .ifPresent(copiedFile -> addFilesToEntry(entry, files));
             }
             renameLinkedFilesToPattern(entry);

@@ -27,8 +27,6 @@ public class DefaultLatexParser implements LatexParser {
      */
     private static final String[] CITE_COMMANDS = {
             "[cC]ite(alt|alp|author|authorfull|date|num|p|t|text|title|url|year|yearpar)?",
-            //"([aA]|[aA]uto|fnote|foot|footfull|full|no|[nN]ote|[pP]aren|[pP]note|[tT]ext|[sS]mart|super)cite([s*]?)",
-            //"footcitetext", "(block|text)cquote"
             "([aA]|fnote|foot|footfull|full|no|[nN]ote|[pP]aren|[pP]note|[tT]ext|[sS]mart|super)cite",
             "footcitetext"
 

@@ -1,25 +1,22 @@
 package org.jabref.logic.autosaveandbackup;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.eventbus.EventBus;
+import com.google.common.eventbus.Subscribe;
 import org.jabref.logic.util.CoarseChangeFilter;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.database.event.AutosaveEvent;
 import org.jabref.model.database.event.BibDatabaseContextChangedEvent;
-
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.*;
+
 /**
  * Saves the given {@link BibDatabaseContext} on every {@link BibDatabaseContextChangedEvent} by posting a new {@link AutosaveEvent}.
- * An intelligent {@link ScheduledThreadPoolExecutor} prevents a high load while saving and rejects all redundant save tasks.
- * The scheduled action is stored and canceled if a newer save action is proposed.
- */
+ *  * An intelligent {@link ExecutorService} with a {@link BlockingQueue} prevents a high load while saving and rejects all redundant save tasks.
+ *  */
 public class AutosaveManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AutosaveManager.class);
@@ -32,7 +29,8 @@ public class AutosaveManager {
 
     private final EventBus eventBus;
     private final CoarseChangeFilter changeFilter;
-    private final ScheduledThreadPoolExecutor executor;
+    private final BlockingQueue<Runnable> workerQueue;
+    private final ExecutorService executor;
     private boolean needsSave = false;
 
     private AutosaveManager(BibDatabaseContext bibDatabaseContext) {
@@ -41,23 +39,18 @@ public class AutosaveManager {
         this.changeFilter = new CoarseChangeFilter(bibDatabaseContext);
         changeFilter.registerListener(this);
 
-        this.executor = new ScheduledThreadPoolExecutor(2);
-        this.executor.scheduleAtFixedRate(
-                () -> {
-                    if (needsSave) {
-                       eventBus.post(new AutosaveEvent());
-                       needsSave = false;
-                    }
-                },
-                DELAY_BETWEEN_AUTOSAVE_ATTEMPTS_IN_SECONDS,
-                DELAY_BETWEEN_AUTOSAVE_ATTEMPTS_IN_SECONDS,
-                TimeUnit.SECONDS);
+        this.workerQueue = new ArrayBlockingQueue<>(1);
+        this.executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, workerQueue);
     }
 
     @Subscribe
     public void listen(@SuppressWarnings("unused") BibDatabaseContextChangedEvent event) {
-        if (!event.isFilteredOut()) {
-            this.needsSave = true;
+        try {
+            executor.submit(() -> {
+                eventBus.post(new AutosaveEvent());
+            });
+        } catch (RejectedExecutionException e) {
+            LOGGER.debug("Rejecting autosave while another save process is already running.");
         }
     }
 

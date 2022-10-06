@@ -1,11 +1,5 @@
 package org.jabref.gui.preview;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.value.ChangeListener;
@@ -14,7 +8,6 @@ import javafx.print.PrinterJob;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.web.WebView;
-
 import org.jabref.gui.ClipBoardManager;
 import org.jabref.gui.DialogService;
 import org.jabref.gui.Globals;
@@ -30,7 +23,6 @@ import org.jabref.logic.search.SearchQuery;
 import org.jabref.logic.util.WebViewStore;
 import org.jabref.model.database.BibDatabaseContext;
 import org.jabref.model.entry.BibEntry;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -38,6 +30,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.html.HTMLAnchorElement;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Displays an BibEntry using the given layout format.
@@ -193,13 +191,13 @@ public class PreviewViewer extends ScrollPane implements InvalidationListener {
     }
 
     private void highlightSearchPattern() {
+        String pattern = searchHighlightPattern.get().pattern().replace("\\Q", "").replace("\\E", "");
         String callbackForUnmark = "";
         if (searchHighlightPattern.isPresent()) {
             String javaScriptRegex = createJavaScriptRegex(searchHighlightPattern.get());
             callbackForUnmark = String.format(JS_MARK_REG_EXP_CALLBACK, javaScriptRegex);
+            previewView.getEngine().executeScript("highlight('" + pattern + "');");
         }
-        String unmarkInstance = String.format(JS_UNMARK_WITH_CALLBACK, callbackForUnmark);
-        previewView.getEngine().executeScript(unmarkInstance);
     }
 
     /**
@@ -262,14 +260,7 @@ public class PreviewViewer extends ScrollPane implements InvalidationListener {
     }
 
     private void setPreviewText(String text) {
-        String myText = String.format("""
-                <html>
-                    %s
-                    <body id="previewBody">
-                        <div id="content"> %s </div>
-                    </body>
-                </html>
-                """, JS_HIGHLIGHT_FUNCTION, text);
+        String myText = JS_HIGHLIGHT_FUNCTION + "<div id=\"content\"" + text + "</div>";
         previewView.getEngine().setJavaScriptEnabled(true);
         previewView.getEngine().loadContent(myText);
 
